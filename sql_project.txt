@@ -1,0 +1,109 @@
+It is a SQL project which having dataset of Danny's Diner. It runs on Windows, macOS, Android and iOS.
+I have make a small project on SQL , where the dataset is Danny's Diner which having sales,menu and members table.
+
+--Q1.What is the total amount each customer spent at the restaurant?
+"There are Sales and Menu tables, and we need to find out the total amount that customers spent at the restaurant. The customer_id is in the Sales table, 
+and the Price column is in the Menu table. To achieve this,
+we must join the two tables and use the GROUP BY clause on customer_id to calculate the sum of the prices in order to find the total amount."
+
+select customer_id,sum(price) from Sales
+join Menu
+on Menu.product_id=Sales.product_id
+group by customer_id
+
+--q2.How many days has each customer visited the restaurant?
+We find out how many days  each customer visited the restaurant. so used count of distinct order_date
+and used group by on customer_id
+
+select customer_id,count(distinct order_date) as days from Sales
+group by customer_id
+
+---q3 What was the first item from the menu purchased by each customer.
+"Join the two tables, Sales and Menu. Then, select the customer_id and product_name to display the first item 
+and the minimum order_date for each customer. 
+Group the results by customer_id to find the purchased menu items for each customer."
+
+select customer_id,product_name,min(order_date)
+from Sales
+join Menu
+group by customer_id
+
+---q4 What is the most purchased item on the menu and how many times was it purchased by all customers?
+
+we find the most purchased item on the menu and the number of times it was purchased by all customer
+
+select Sales.product_id,product_name,count(Sales.product_id) as total from Sales
+join Menu
+on Sales.product_id=Menu.product_id
+group by Sales.product_id
+
+--q5 Which item was the most popular for each customer?
+Join the two tables, Sales and Menu. Then, select the customer_id because we want to find the most popular item for each customer. 
+Additionally, select product_id, product name (renamed as item), and the count of product_id.
+Group the results by customer_id and product_id to determine how many times each item was purchased by each customer.
+
+select customer_id,Sales.product_id,product_name,count(Sales.product_id) as total
+from Sales
+join Menu
+on Sales.product_id=Menu.product_id
+group by customer_id,Sales.product_id
+
+--q6 Which item was purchased first by the customer after they became a member
+
+We are selecting the customer_id from the Sales table.We are using the COUNT function to count the occurrences of each product_id
+
+select Sales.customer_id,order_date,min(order_date) ,Sales.product_id,join_date,Menu.product_name
+from Sales
+join Members
+on Sales.customer_id=Members.customer_id
+join Menu
+on Sales.product_id=Menu.product_id
+where Members.join_date<=Sales.order_date
+group by Sales.customer_id
+
+--q7 Which item was purchased just before the customer became a member?
+
+selects the maximum order date for each customer who made a purchase after joining. It joins the "Sales," "Members," and "Menu" tables,
+filtering for sales that occurred after the customer's join date. Then, it groups the results by customer and finds the maximum order date for each customer.
+
+select max(order_date),customer_id from(
+select Sales.customer_id,order_date,Sales.product_id,join_date,Menu.product_name
+from Sales
+join Members
+on Sales.customer_id=Members.customer_id
+join Menu
+on Sales.product_id=Menu.product_id
+where Members.join_date>=Sales.order_date) as tbl 
+ group by customer_id
+
+ --q8 What is the total items and amount spent for each member before they became a member?
+ 
+calculates the total count of menu items purchased and the sum of prices for each customer. It joins the "Menu," "Sales," 
+and "Members" tables and groups the results by customer and join date, providing insights into customer activity based on their join date.
+
+
+ 
+select Sales.customer_id,join_date,count(Menu.product_id),sum(price) from Menu
+join Sales
+on Menu.product_id=Sales.product_id
+join Members
+on Sales.customer_id=Members.customer_id
+group by Sales.customer_id,join_date
+
+--q9 If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
+
+calculates the modified price for each menu item based on the product name and then groups the results by customer ID. If the product name is 'sushi,' 
+the price is multiplied by 20; otherwise, it's multiplied by 10. The modified prices are grouped by customer ID for further analysis.
+
+ select Sales.product_id,customer_id,product_name,
+case product_name
+when 'sushi' then price*20
+else
+price*10
+end as price
+from Menu
+join Sales
+on Menu.product_id=Sales.product_id
+) as tbl
+group by customer_id
+
